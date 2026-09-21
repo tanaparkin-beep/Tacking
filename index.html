@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="th">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<title>RTB Task Tracker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --page:#f3f5f8; --surface:#ffffff; --surface-2:#eef1f5; --ink:#141922; --ink-2:#4f5967; --muted:#7f8896; --line:#dfe4ea; --line-2:#ccd3dc;
+  --accent:#1c5cab; --accent-soft:#e3edfa; --accent-ink:#1c5cab;
+  --s-done:#0ca30c; --s-done-bg:#e3f5e3; --s-done-ink:#0a6d0a;
+  --s-open:#2a78d6; --s-open-bg:#e2edfb; --s-open-ink:#1a56a3;
+  --s-soon:#e09a00; --s-soon-bg:#fdf1d5; --s-soon-ink:#8a5b00;
+  --s-late:#d03b3b; --s-late-bg:#fbe3e3; --s-late-ink:#a12727;
+  --s-nodue:#8a93a0; --s-nodue-bg:#eceff3; --s-nodue-ink:#5a6472;
+  --s-draft:#b9c0c9; --s-draft-bg:#f2f4f7; --s-draft-ink:#6c7580;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#0e1116; --surface:#171b22; --surface-2:#1f242d; --ink:#eef1f5; --ink-2:#b6bec9; --muted:#7f8896; --line:#2a303a; --line-2:#363d49;
+    --accent:#5b9bec; --accent-soft:#1a2a42; --accent-ink:#8ab8f3;
+    --s-done:#2fbf2f; --s-done-bg:#12301a; --s-done-ink:#6fd66f;
+    --s-open:#3987e5; --s-open-bg:#152a45; --s-open-ink:#8ab8f3;
+    --s-soon:#f0b429; --s-soon-bg:#382b0c; --s-soon-ink:#f5cc6a;
+    --s-late:#e35a5a; --s-late-bg:#3a1717; --s-late-ink:#f39a9a;
+    --s-nodue:#7f8896; --s-nodue-bg:#242a33; --s-nodue-ink:#aeb6c0;
+    --s-draft:#4a525e; --s-draft-bg:#1c2129; --s-draft-ink:#8d97a3;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0e1116; --surface:#171b22; --surface-2:#1f242d; --ink:#eef1f5; --ink-2:#b6bec9; --muted:#7f8896; --line:#2a303a; --line-2:#363d49;
+  --accent:#5b9bec; --accent-soft:#1a2a42; --accent-ink:#8ab8f3;
+  --s-done:#2fbf2f; --s-done-bg:#12301a; --s-done-ink:#6fd66f;
+  --s-open:#3987e5; --s-open-bg:#152a45; --s-open-ink:#8ab8f3;
+  --s-soon:#f0b429; --s-soon-bg:#382b0c; --s-soon-ink:#f5cc6a;
+  --s-late:#e35a5a; --s-late-bg:#3a1717; --s-late-ink:#f39a9a;
+  --s-nodue:#7f8896; --s-nodue-bg:#242a33; --s-nodue-ink:#aeb6c0;
+  --s-draft:#4a525e; --s-draft-bg:#1c2129; --s-draft-ink:#8d97a3;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding-block:20px 48px;padding-inline:16px}
+button{font:inherit;color:inherit}
+button:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tn{font-variant-numeric:tabular-nums}
+
+.hdr{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:18px}
+.hdr h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.hdr .sub{color:var(--ink-2);margin-top:2px}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:12.5px;color:var(--ink-2);text-align:right}
+.hdr-right a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid var(--line-2)}
+.hdr-right a:hover{border-bottom-color:var(--accent-ink)}
+
+.tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px;cursor:pointer;text-align:left;transition:border-color .15s}
+.tile:hover{border-color:var(--line-2)}
+.tile.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.tile .lbl{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);font-weight:500}
+.tile .num{font-size:30px;font-weight:700;line-height:1.1;margin-top:6px;letter-spacing:-.02em}
+.tile .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+.dot.done{background:var(--s-done)}.dot.open{background:var(--s-open)}.dot.soon{background:var(--s-soon)}.dot.late{background:var(--s-late)}.dot.nodue{background:var(--s-nodue)}.dot.draft{background:var(--s-draft)}.dot.all{background:var(--ink)}
+.tile.done .num{color:var(--s-done-ink)}.tile.late .num{color:var(--s-late-ink)}.tile.soon .num{color:var(--s-soon-ink)}.tile.open .num{color:var(--s-open-ink)}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h2{margin:0 0 2px;font-size:14px;font-weight:600}
+.panel .desc{font-size:12px;color:var(--muted);margin-bottom:12px}
+.bars{display:flex;flex-direction:column;gap:7px;max-height:360px;overflow-y:auto;padding-right:4px}
+.brow{display:grid;grid-template-columns:150px 1fr 34px;align-items:center;gap:10px;cursor:pointer;border-radius:6px;padding:2px 4px;margin:0 -4px}
+.brow:hover{background:var(--surface-2)}
+.brow.active{background:var(--accent-soft)}
+.brow .bl{font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .bl b{color:var(--s-late-ink);font-weight:500;margin-left:5px;font-size:11px}
+.brow .bt{font-size:12px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+.track{display:flex;height:14px;gap:2px}
+.seg{height:100%;border-radius:2px;min-width:2px}
+.seg:first-child{border-radius:4px 2px 2px 4px}.seg:last-child{border-radius:2px 4px 4px 2px}.seg:only-child{border-radius:4px}
+.seg.done{background:var(--s-done)}.seg.open{background:var(--s-open)}.seg.soon{background:var(--s-soon)}.seg.late{background:var(--s-late)}.seg.nodue{background:var(--s-nodue)}.seg.draft{background:var(--s-draft)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+.up{display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto;padding-right:4px}
+.upi{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:8px 10px;border-radius:8px;background:var(--surface-2);cursor:pointer;border-left:3px solid var(--s-nodue)}
+.upi.late{border-left-color:var(--s-late)}.upi.soon{border-left-color:var(--s-soon)}
+.upi:hover{filter:brightness(.98)}
+.upi .d{font-size:12px;line-height:1.3;text-align:center;min-width:44px}
+.upi .d b{display:block;font-size:17px;font-weight:700}
+.upi .d small{color:var(--muted);font-size:10.5px}
+.upi .t{font-size:12.5px;line-height:1.4}
+.upi .t .p{font-size:11px;color:var(--muted);display:block}
+.upi .t .w{display:block;font-size:11px;margin-top:2px;color:var(--ink-2)}
+.upi .t .w.late{color:var(--s-late-ink);font-weight:600}.upi .t .w.soon{color:var(--s-soon-ink);font-weight:600}
+.empty{color:var(--muted);font-size:12.5px;padding:14px 0;text-align:center}
+
+.tool{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.tool input[type=search]{flex:1 1 220px;min-width:0;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+.tool select{padding:8px 30px 8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;border:none;cursor:pointer;font-weight:500}
+.chip .x{font-size:14px;line-height:1;opacity:.7}
+.clear{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:2px 4px}
+.count{font-size:12.5px;color:var(--ink-2);margin-left:auto}
+
+.tbl-wrap{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:860px}
+thead th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:1;white-space:nowrap}
+thead th.sort{cursor:pointer;user-select:none}
+thead th.sort:hover{color:var(--ink)}
+thead th .arr{opacity:.5;margin-left:3px}
+tbody tr.g td{background:var(--surface-2);font-weight:600;font-size:12.5px;padding:7px 12px;color:var(--ink-2);border-bottom:1px solid var(--line)}
+tbody tr.g td span{font-weight:500;color:var(--muted);margin-left:6px}
+tbody tr.g td span i{font-style:normal;color:var(--s-late-ink)}
+tbody tr.r td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}
+tbody tr.r{cursor:pointer}
+tbody tr.r:hover td{background:color-mix(in srgb,var(--surface-2) 55%,var(--surface))}
+tbody tr.r.open-row td{border-bottom-color:transparent}
+tbody tr.d td{padding:0 12px 14px 44px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink-2)}
+.title{font-weight:500;color:var(--ink);display:flex;gap:8px;align-items:flex-start}
+.title .car{flex:none;width:16px;height:16px;margin-top:3px;color:var(--muted);transition:transform .15s}
+tr.open-row .car{transform:rotate(90deg)}
+.title .note{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:1px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;line-height:1.5}
+.pill.done{background:var(--s-done-bg);color:var(--s-done-ink)}.pill.open{background:var(--s-open-bg);color:var(--s-open-ink)}.pill.soon{background:var(--s-soon-bg);color:var(--s-soon-ink)}.pill.late{background:var(--s-late-bg);color:var(--s-late-ink)}.pill.nodue{background:var(--s-nodue-bg);color:var(--s-nodue-ink)}.pill.draft{background:var(--s-draft-bg);color:var(--s-draft-ink);border:1px dashed var(--s-draft)}
+.pill svg{width:11px;height:11px}
+.proj{display:inline-block;padding:1px 7px;border:1px solid var(--line-2);border-radius:5px;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.own{font-size:12.5px;white-space:nowrap}
+.own small{display:block;font-size:11px;color:var(--muted)}
+.due{white-space:nowrap;font-variant-numeric:tabular-nums}
+.due small{display:block;font-size:11px;color:var(--muted)}
+.due.late{color:var(--s-late-ink);font-weight:600}.due.soon{color:var(--s-soon-ink);font-weight:600}
+.due.late small,.due.soon small{color:inherit;font-weight:500;opacity:.85}
+.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px 20px;padding-top:6px}
+.dl div b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.dl a{color:var(--accent-ink);text-decoration:none}
+.foot{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6}
+.foot b{color:var(--ink-2);font-weight:600}
+
+@media (max-width:980px){.tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid{grid-template-columns:1fr}
+  .hdr-right{align-items:flex-start;text-align:left}
+  .brow{grid-template-columns:110px 1fr 30px}
+  tbody tr.d td{padding-left:12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="hdr">
+    <div>
+      <div class="eyebrow">Rapid Transit System Business · ทะเบียนงานจากแท็บ Task</div>
+      <h1>RTB Task Tracker</h1>
+      <div class="sub">สรุปสถานะงานรายบุคคลจากแท็บ Task ในไฟล์บันทึกการประชุม · อ้างอิงวันนี้ <b id="today"></b></div>
+    </div>
+    <div class="hdr-right">
+      <span>แหล่งข้อมูล: <a href="https://docs.google.com/spreadsheets/d/1nYQOoOtZRPfxs1iKjQckmWs_QnvS2UdS-49XUeO0Oro/edit" target="_blank" rel="noopener">Google Sheet › แท็บ Task</a></span>
+      <span id="mcount"></span>
+    </div>
+  </header>
+
+  <section class="tiles" id="tiles" aria-label="สรุปสถานะ"></section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>ภาระงานแยกรายบุคคล</h2>
+      <div class="desc">1 แถวใน Task = 1 งานของ 1 คน · เรียงตามงานที่ยังไม่ปิด · คลิกเพื่อกรอง</div>
+      <div class="bars" id="ownerBars"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="panel">
+      <h2>ครบกำหนดใน 14 วัน &amp; เกินกำหนด</h2>
+      <div class="desc">เรียงตามวันครบกำหนด · คลิกเพื่อเปิดรายละเอียด</div>
+      <div class="up" id="upcoming"></div>
+    </div>
+    <div class="panel">
+      <h2>สรุปตามชื่องาน (Task)</h2>
+      <div class="desc">งานเดียวกันที่มอบหลายคน รวมเป็นแท่งเดียว</div>
+      <div class="bars" id="taskBars"></div>
+    </div>
+    <div class="panel">
+      <h2>สรุปตามโครงการ</h2>
+      <div class="desc">คลิกแถวเพื่อกรองตาราง</div>
+      <div class="bars" id="projBars"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="tool">
+      <input type="search" id="q" placeholder="ค้นหางาน, โครงการ, ชื่อผู้รับผิดชอบ, Notes…" aria-label="ค้นหา">
+      <select id="fOwner" aria-label="ผู้รับผิดชอบ"><option value="">ผู้รับผิดชอบ: ทั้งหมด</option></select>
+      <select id="group" aria-label="จัดกลุ่ม">
+        <option value="owner">จัดกลุ่ม: ผู้รับผิดชอบ (รายบุคคล)</option>
+        <option value="task">จัดกลุ่ม: ชื่องาน</option>
+        <option value="project">จัดกลุ่ม: โครงการ</option>
+        <option value="status">จัดกลุ่ม: สถานะ</option>
+        <option value="">ไม่จัดกลุ่ม</option>
+      </select>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="tbl-wrap"><div class="tbl-scroll">
+      <table id="tbl">
+        <thead><tr>
+          <th style="width:34%">งาน (Task Name)</th>
+          <th>โครงการ</th>
+          <th>ผู้รับผิดชอบ</th>
+          <th class="sort" data-k="created">สร้างเมื่อ <span class="arr">↕</span></th>
+          <th class="sort" data-k="due">ครบกำหนด <span class="arr">↕</span></th>
+          <th>สถานะ</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div></div>
+    <p class="foot">
+      <b>เกณฑ์สถานะ:</b> <b>เสร็จแล้ว</b> = มี Finish Date ·
+      <b>เกินกำหนด</b> = เลย Due date และยังไม่มี Finish Date ·
+      <b>ใกล้ครบกำหนด</b> = Due ภายใน 7 วัน (รวมวันนี้) ·
+      <b>อยู่ในกำหนด</b> = Due ยังไม่ถึง ·
+      <b>ไม่ระบุกำหนด</b> = ไม่มี Due date ·
+      <b>ร่าง</b> = มีแค่ชื่องาน ยังไม่ระบุโครงการ/ผู้รับผิดชอบ/วันที่
+      <br>สร้างจากแท็บ Task เมื่อ <span id="gen"></span> · แถวใน Task ที่ยังไม่มี Finish Date จะขึ้นเป็นค้างอยู่เสมอ แนะนำให้กรอก Finish Date เมื่อปิดงาน
+    </p>
+  </section>
+</div>
+
+<script>
+const DATA = {"today": "2026-09-21", "generated": "2026-09-21 14:51", "rows": [{"task": "PE สัญญา 10 ปี", "project": "IBL (ECS)", "owner": "มนัส พ้นภัย", "ownerEn": "Manas Phonphai", "email": "", "created": "2026-09-19", "due": "2026-09-21", "finish": null, "notes": "", "draft": false}, {"task": "PE สัญญา 10 ปี", "project": "IBL (FDA,TVS)", "owner": "ชัยนรินทร์ แตงหนู", "ownerEn": "Chainarin Thangnu", "email": "", "created": "2026-09-19", "due": "2026-09-21", "finish": null, "notes": "", "draft": false}, {"task": "PE สัญญา 10 ปี", "project": "BLE", "owner": "ณัฐพัชร์ ศีลธรรมพิทักษ์", "ownerEn": "Nattapatchr Sinthumpitak", "email": "", "created": "2026-09-19", "due": "2026-09-21", "finish": null, "notes": "", "draft": false}, {"task": "Kaizen", "project": "CENTER", "owner": "กฤตวิทย์ จิตราทร", "ownerEn": "Kitawit Jitaton", "email": "", "created": "2026-06-22", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Kaizen", "project": "CENTER", "owner": "ณัฐรัตน์ ถามั่งมี", "ownerEn": "Nattharat Tamungmee", "email": "", "created": "2026-06-22", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Kaizen", "project": "CENTER", "owner": "ณัฐพัชร์ ศีลธรรมพิทักษ์", "ownerEn": "Nattapatchr Sinthumpitak", "email": "", "created": "2026-06-22", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Kaizen", "project": "CENTER", "owner": "มนัส พ้นภัย", "ownerEn": "Manas Phonphai", "email": "", "created": "2026-06-22", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Kaizen", "project": "CENTER", "owner": "ชัยนรินทร์ แตงหนู", "ownerEn": "Chainarin Thangnu", "email": "", "created": "2026-06-22", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Kaizen", "project": "CENTER", "owner": "เปรมศักดิ์ ปรีชา", "ownerEn": "Premsak Preecha", "email": "", "created": "2026-06-22", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "USO ค่าปรับ TICC 18M", "project": "USO", "owner": "ณัฐรัตน์ ถามั่งมี", "ownerEn": "Nattharat Tamungmee", "email": "", "created": "2026-06-22", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "TKC เคลียค่าใช้จ่าย", "project": "USO", "owner": "ณัฐรัตน์ ถามั่งมี", "ownerEn": "Nattharat Tamungmee", "email": "", "created": "2026-06-22", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Material Infra เคลียค่าใช้จ่าย", "project": "USO", "owner": "ณัฐรัตน์ ถามั่งมี", "ownerEn": "Nattharat Tamungmee", "email": "", "created": "2026-06-22", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "CN 13M", "project": "USO", "owner": "ณัฐรัตน์ ถามั่งมี", "ownerEn": "Nattharat Tamungmee", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "VO", "project": "Spur Line", "owner": "ณัฐรัตน์ ถามั่งมี", "ownerEn": "Nattharat Tamungmee", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "FTE", "project": "IBL (ECS)", "owner": "มนัส พ้นภัย", "ownerEn": "Manas Phonphai", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "FTE", "project": "IBL (FDA,TVS)", "owner": "ชัยนรินทร์ แตงหนู", "ownerEn": "Chainarin Thangnu", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "FTE", "project": "BLE", "owner": "ณัฐพัชร์ ศีลธรรมพิทักษ์", "ownerEn": "Nattapatchr Sinthumpitak", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Job description", "project": "IBL (ECS)", "owner": "มนัส พ้นภัย", "ownerEn": "Manas Phonphai", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Job description", "project": "IBL (FDA,TVS)", "owner": "ชัยนรินทร์ แตงหนู", "ownerEn": "Chainarin Thangnu", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Job description", "project": "BLE", "owner": "ณัฐพัชร์ ศีลธรรมพิทักษ์", "ownerEn": "Nattapatchr Sinthumpitak", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Job description", "project": "GCC", "owner": "กฤตวิทย์ จิตราทร", "ownerEn": "Kitawit Jitaton", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Job description", "project": "ORL", "owner": "Apissara Jermkhuntod", "ownerEn": "Apissara Jermkhuntod", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "Job description", "project": "IRDN", "owner": "ณัฐรัตน์ ถามั่งมี", "ownerEn": "Nattharat Tamungmee", "email": "", "created": "2026-06-24", "due": "2026-06-29", "finish": null, "notes": "", "draft": false}, {"task": "check in /out", "project": "CENTER", "owner": "ณัฐรัตน์ ถามั่งมี", "ownerEn": "Nattharat Tamungmee", "email": "", "created": "2026-09-21", "due": "2026-09-23", "finish": null, "notes": "แก้ไขระบบหลังบ้าน", "draft": false}, {"task": "ใบเตือน K.สุภักดิ์", "project": "CENTER", "owner": "ชัยนรินทร์ แตงหนู", "ownerEn": "Chainarin Thangnu", "email": "", "created": "2026-09-21", "due": "2026-09-22", "finish": null, "notes": "", "draft": false}, {"task": "ประกาศระเบียบการทำงานและการลา", "project": "CENTER", "owner": "ภัยวดี อินตา", "ownerEn": "Paiwadee Inta", "email": "", "created": "2026-09-21", "due": "2026-09-25", "finish": null, "notes": "รอคุณรัฐพงศ์คุยกับ HR", "draft": false}, {"task": "ER ตำแหน่งว่าง", "project": "ไม่ระบุ", "owner": "ไม่ระบุ", "ownerEn": "", "email": "", "created": null, "due": null, "finish": null, "notes": "", "draft": true}, {"task": "สรุป HC", "project": "ไม่ระบุ", "owner": "ไม่ระบุ", "ownerEn": "", "email": "", "created": null, "due": null, "finish": null, "notes": "รอ HR Review", "draft": true}, {"task": "ทำคบิปนำเสนอ Body Camera", "project": "CENTER", "owner": "ภาคิน ธนาพงศภัค", "ownerEn": "Parkin Tanapongsapak", "email": "", "created": "2026-09-01", "due": "2026-09-23", "finish": null, "notes": "", "draft": false}, {"task": "End to End", "project": "CENTER", "owner": "ภาคิน ธนาพงศภัค", "ownerEn": "Parkin Tanapongsapak", "email": "", "created": "2026-09-01", "due": "2026-09-25", "finish": null, "notes": "", "draft": false}, {"task": "Job Admin", "project": "CENTER", "owner": "ณัฐพัชร์ ศีลธรรมพิทักษ์", "ownerEn": "Nattapatchr Sinthumpitak", "email": "", "created": "2026-09-21", "due": "2026-09-24", "finish": null, "notes": "", "draft": false}, {"task": "PO Red Line", "project": "Red Line", "owner": "ณัฐรัตน์ ถามั่งมี", "ownerEn": "Nattharat Tamungmee", "email": "", "created": "2026-08-21", "due": "2026-09-18", "finish": null, "notes": "", "draft": false}, {"task": "Notebook", "project": "CENTER", "owner": "ภัยวดี อินตา", "ownerEn": "Paiwadee Inta", "email": "", "created": "2026-01-08", "due": "2026-09-30", "finish": null, "notes": "", "draft": false}, {"task": "Uniform", "project": "CENTER", "owner": "ภัยวดี อินตา", "ownerEn": "Paiwadee Inta", "email": "", "created": "2026-01-08", "due": "2026-10-31", "finish": null, "notes": "Vendor ทยอยส่ง", "draft": false}]};
+const TODAY = new Date(DATA.today+'T00:00:00');
+const SOON_DAYS = 7;
+const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const STATUS = {
+  late:{l:'เกินกำหนด',ico:'M6 2v5M6 9.5v.5'},
+  soon:{l:'ใกล้ครบกำหนด',ico:'M6 2.5v3.5l2 1.5'},
+  open:{l:'อยู่ในกำหนด',ico:'M2 6a4 4 0 0 1 7-2.5M10 6a4 4 0 0 1-7 2.5'},
+  nodue:{l:'ไม่ระบุกำหนด',ico:'M3 6h6'},
+  draft:{l:'ร่าง',ico:'M3 3h6v6H3z'},
+  done:{l:'เสร็จแล้ว',ico:'M2 6l3 3 5-6'}
+};
+const ORDER = ['late','soon','open','nodue','draft','done'];
+const dayDiff=(iso)=>Math.round((new Date(iso+'T00:00:00')-TODAY)/86400000);
+const fmtD=(iso)=>{if(!iso)return '—';const d=new Date(iso+'T00:00:00');return `${d.getDate()} ${TH_M[d.getMonth()]} ${String(d.getFullYear()+543).slice(2)}`};
+
+const ITEMS = DATA.rows.map((r,i)=>{
+  const it={...r,id:i+1};
+  it.days=it.due?dayDiff(it.due):null;
+  it.age=it.created?-dayDiff(it.created):null;
+  if(it.draft) it.s='draft';
+  else if(it.finish) it.s='done';
+  else if(it.due&&it.days<0) it.s='late';
+  else if(it.due&&it.days<=SOON_DAYS) it.s='soon';
+  else if(it.due) it.s='open';
+  else it.s='nodue';
+  return it;
+});
+const relDue=(it)=>{if(!it.due||it.s==='done')return '';const n=it.days;if(n<0)return `เกิน ${-n} วัน`;if(n===0)return 'ครบกำหนดวันนี้';return `อีก ${n} วัน`};
+
+const state={status:null,project:null,task:null,owner:'',q:'',group:'owner',sort:{k:null,dir:1},open:new Set()};
+try{const s=JSON.parse(localStorage.getItem('rtb-task-ui')||'{}');if(s.group!==undefined)state.group=s.group}catch(e){}
+const save=()=>{try{localStorage.setItem('rtb-task-ui',JSON.stringify({group:state.group}))}catch(e){}};
+const $=(s)=>document.querySelector(s);
+const esc=(s)=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pill=(s)=>`<span class="pill ${s}"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${STATUS[s].ico}"/></svg>${STATUS[s].l}</span>`;
+
+$('#today').textContent=`${TODAY.getDate()} ${TH_M[TODAY.getMonth()]} ${String(TODAY.getFullYear()+543).slice(2)}`;
+$('#gen').textContent=DATA.generated;
+const owners=[...new Set(ITEMS.map(i=>i.owner))].sort((a,b)=>a.localeCompare(b,'th'));
+$('#mcount').textContent=`${ITEMS.length} แถวงาน · ${owners.filter(o=>o!=='ไม่ระบุ').length} คน · ${new Set(ITEMS.map(i=>i.task)).size} ชื่องาน`;
+owners.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;$('#fOwner').appendChild(op)});
+$('#group').value=state.group;
+
+const passQ=(it)=>{const q=state.q.trim().toLowerCase();return !q||[it.task,it.project,it.owner,it.ownerEn,it.email,it.notes].join(' ').toLowerCase().includes(q)};
+const filt=(skip)=>ITEMS.filter(it=>passQ(it)&&(skip==='owner'||!state.owner||it.owner===state.owner)&&(skip==='status'||!state.status||it.s===state.status)&&(skip==='project'||!state.project||it.project===state.project)&&(skip==='task'||!state.task||it.task===state.task));
+
+function renderTiles(){
+  const c=s=>ITEMS.filter(i=>i.s===s).length;
+  const tiles=[
+    {k:null,cls:'all',l:'แถวงานทั้งหมด',n:ITEMS.length,h:`${new Set(ITEMS.map(i=>i.task)).size} ชื่องาน · ${new Set(ITEMS.map(i=>i.project)).size} โครงการ`},
+    {k:'late',cls:'late',l:'เกินกำหนด',n:c('late'),h:'เลย Due แล้ว ยังไม่มี Finish Date'},
+    {k:'soon',cls:'soon',l:'ครบกำหนดใน 7 วัน',n:c('soon'),h:'รวมงานที่ครบกำหนดวันนี้'},
+    {k:'open',cls:'open',l:'อยู่ในกำหนด',n:c('open'),h:'Due ยังไม่ถึง'},
+    {k:'nodue',cls:'nodue',l:'ไม่ระบุกำหนด',n:c('nodue'),h:`+ ร่างอีก ${c('draft')} รายการ`},
+    {k:'done',cls:'done',l:'เสร็จแล้ว',n:c('done'),h:ITEMS.length?`${Math.round(c('done')/ITEMS.length*100)}% ของทั้งหมด`:''},
+  ];
+  $('#tiles').innerHTML=tiles.map(t=>`<button class="tile ${t.cls} ${(t.k?state.status===t.k:!state.status)?'active':''}" data-s="${t.k??''}"><span class="lbl"><i class="dot ${t.cls}"></i>${t.l}</span><div class="num">${t.n}</div><div class="hint">${t.h}</div></button>`).join('');
+  $('#tiles').querySelectorAll('.tile').forEach(b=>b.onclick=()=>{const k=b.dataset.s||null;state.status=(!k||state.status===k)?null:k;renderAll()});
+}
+const stack=(items)=>ORDER.map(s=>({s,n:items.filter(i=>i.s===s).length})).filter(x=>x.n);
+const trackHTML=(items,max)=>`<div class="track" style="width:${items.length/max*100}%">${stack(items).map(x=>`<div class="seg ${x.s}" style="flex:${x.n}" title="${STATUS[x.s].l} ${x.n}"></div>`).join('')}</div>`;
+const openCount=(g)=>g.filter(i=>i.s!=='done'&&i.s!=='draft').length;
+
+function barPanel(el,pool,keyFn,activeKey,onPick,labelFn){
+  const keys=[...new Set(pool.map(keyFn))];
+  const rows=keys.map(k=>({k,items:pool.filter(i=>keyFn(i)===k)})).sort((a,b)=>openCount(b.items)-openCount(a.items)||b.items.length-a.items.length);
+  const max=Math.max(1,...rows.map(x=>x.items.length));
+  el.innerHTML=rows.map(x=>{const late=x.items.filter(i=>i.s==='late').length;return `<div class="brow ${activeKey===x.k?'active':''}" data-k="${esc(x.k)}" role="button" tabindex="0"><span class="bl" title="${esc(x.k)}">${esc(labelFn?labelFn(x.k):x.k)}${late?`<b>เกิน ${late}</b>`:''}</span>${trackHTML(x.items,max)}<span class="bt">${x.items.length}</span></div>`}).join('')||'<div class="empty">ไม่มีงานตามเงื่อนไข</div>';
+  el.querySelectorAll('.brow').forEach(r=>{const f=()=>onPick(r.dataset.k);r.onclick=f;r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+}
+function renderPanels(){
+  barPanel($('#ownerBars'),filt('owner'),i=>i.owner,state.owner||null,k=>{state.owner=state.owner===k?'':k;$('#fOwner').value=state.owner;renderAll()});
+  barPanel($('#taskBars'),filt('task'),i=>i.task,state.task,k=>{state.task=state.task===k?null:k;renderAll()});
+  barPanel($('#projBars'),filt('project'),i=>i.project,state.project,k=>{state.project=state.project===k?null:k;renderAll()});
+  $('#legend').innerHTML=ORDER.map(s=>`<span><i class="dot ${s}"></i>${STATUS[s].l}</span>`).join('');
+}
+function renderUpcoming(){
+  const list=ITEMS.filter(i=>i.due&&i.s!=='done'&&i.days<=14).sort((a,b)=>a.due.localeCompare(b.due)||a.task.localeCompare(b.task,'th'));
+  $('#upcoming').innerHTML=list.map(i=>{const d=new Date(i.due+'T00:00:00');return `<div class="upi ${i.s}" data-id="${i.id}" role="button" tabindex="0"><div class="d"><b>${d.getDate()}</b><small>${TH_M[d.getMonth()]}</small></div><div class="t"><span class="p">${esc(i.project)} · ${esc(i.owner)}</span>${esc(i.task)}${i.notes?` <span style="color:var(--muted)">· ${esc(i.notes)}</span>`:''}<span class="w ${i.s}">${relDue(i)}</span></div></div>`}).join('')||'<div class="empty">ไม่มีงานครบกำหนดในช่วงนี้</div>';
+  $('#upcoming').querySelectorAll('.upi').forEach(r=>{const f=()=>{const id=+r.dataset.id;state.status=state.project=state.task=null;state.owner='';state.q='';$('#q').value='';$('#fOwner').value='';state.open.add(id);renderAll();const tr=document.querySelector(`tr.r[data-id="${id}"]`);tr&&tr.scrollIntoView({behavior:'smooth',block:'center'})};r.onclick=f;r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+}
+function renderChips(){
+  const chips=[];
+  if(state.status)chips.push({k:'status',l:`สถานะ: ${STATUS[state.status].l}`});
+  if(state.owner)chips.push({k:'owner',l:`ผู้รับผิดชอบ: ${state.owner}`});
+  if(state.task)chips.push({k:'task',l:`งาน: ${state.task}`});
+  if(state.project)chips.push({k:'project',l:`โครงการ: ${state.project}`});
+  if(state.q.trim())chips.push({k:'q',l:`ค้นหา: “${state.q.trim()}”`});
+  $('#chips').innerHTML=chips.map(c=>`<button class="chip" data-k="${c.k}">${esc(c.l)}<span class="x">×</span></button>`).join('')+(chips.length?`<button class="clear" id="clearAll">ล้างทั้งหมด</button>`:'')+`<span class="count">แสดง ${filt().length} จาก ${ITEMS.length} แถวงาน</span>`;
+  $('#chips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(k==='q'){state.q='';$('#q').value=''}else if(k==='owner'){state.owner='';$('#fOwner').value=''}else state[k]=null;renderAll()});
+  const ca=$('#clearAll');if(ca)ca.onclick=()=>{state.status=state.project=state.task=null;state.owner=state.q='';$('#q').value='';$('#fOwner').value='';renderAll()};
+}
+function rowHTML(it){
+  const dueCls=(it.s==='late'||it.s==='soon')?it.s:'';
+  const dueTxt=it.s==='done'?`${fmtD(it.due)}<small>เสร็จ ${fmtD(it.finish)}</small>`:it.due?`${fmtD(it.due)}<small>${relDue(it)}</small>`:`—<small>ไม่ระบุ</small>`;
+  const open=state.open.has(it.id);
+  const det=`<div class="dl">
+    <div><b>ผู้รับผิดชอบ</b>${esc(it.owner)}${it.ownerEn&&it.ownerEn!==it.owner?` <span style="color:var(--muted)">(${esc(it.ownerEn)})</span>`:''}</div>
+    <div><b>Email</b>${it.email?`<a href="mailto:${esc(it.email)}">${esc(it.email)}</a>`:'—'}</div>
+    <div><b>Created</b>${fmtD(it.created)}${it.age!=null&&it.s!=='done'?` <span style="color:var(--muted)">(เปิดมา ${it.age} วัน)</span>`:''}</div>
+    <div><b>Due</b>${fmtD(it.due)}</div>
+    <div><b>Finish</b>${fmtD(it.finish)}</div>
+    <div style="grid-column:1/-1"><b>Notes</b>${it.notes?esc(it.notes):'<span style="color:var(--muted)">—</span>'}</div>
+  </div>`;
+  return `<tr class="r ${open?'open-row':''}" data-id="${it.id}" tabindex="0" aria-expanded="${open}">
+    <td><div class="title"><svg class="car" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3l5 5-5 5"/></svg><div>${esc(it.task)}${it.notes?`<span class="note">${esc(it.notes)}</span>`:''}</div></div></td>
+    <td><span class="proj">${esc(it.project)}</span></td>
+    <td><div class="own">${esc(it.owner)}${it.ownerEn&&it.ownerEn!==it.owner?`<small>${esc(it.ownerEn)}</small>`:''}</div></td>
+    <td class="tn" style="white-space:nowrap;font-size:12.5px;color:var(--ink-2)">${fmtD(it.created)}</td>
+    <td><div class="due ${dueCls}">${dueTxt}</div></td>
+    <td>${pill(it.s)}</td>
+  </tr>${open?`<tr class="d"><td colspan="6">${det}</td></tr>`:''}`;
+}
+function renderTable(){
+  let list=filt();
+  const {k,dir}=state.sort;
+  list=[...list].sort((a,b)=>{
+    if(k==='due')return ((a.due||'9999').localeCompare(b.due||'9999'))*dir;
+    if(k==='created')return ((a.created||'9999').localeCompare(b.created||'9999'))*dir;
+    return ORDER.indexOf(a.s)-ORDER.indexOf(b.s)||(a.due||'9999').localeCompare(b.due||'9999')||a.task.localeCompare(b.task,'th');
+  });
+  let html='';
+  if(state.group){
+    const keyOf=i=>state.group==='owner'?i.owner:state.group==='task'?i.task:state.group==='project'?i.project:i.s;
+    const labelOf=key=>state.group==='status'?STATUS[key].l:key;
+    let keys=[...new Set(list.map(keyOf))];
+    if(state.group==='status')keys.sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b));
+    else keys.sort((a,b)=>{const ga=list.filter(i=>keyOf(i)===a),gb=list.filter(i=>keyOf(i)===b);return openCount(gb)-openCount(ga)||gb.length-ga.length});
+    keys.forEach(key=>{const g=list.filter(i=>keyOf(i)===key);const late=g.filter(i=>i.s==='late').length,done=g.filter(i=>i.s==='done').length;html+=`<tr class="g"><td colspan="6">${esc(labelOf(key))}<span>${g.length} งาน${late?` · <i>เกินกำหนด ${late}</i>`:''}${done?` · เสร็จ ${done}`:''}</span></td></tr>`+g.map(rowHTML).join('')});
+  }else html=list.map(rowHTML).join('');
+  $('#tbody').innerHTML=html||`<tr><td colspan="6"><div class="empty">ไม่พบงานตามเงื่อนไขที่เลือก</div></td></tr>`;
+  $('#tbody').querySelectorAll('tr.r').forEach(tr=>{const f=()=>{const id=+tr.dataset.id;state.open.has(id)?state.open.delete(id):state.open.add(id);renderTable()};tr.onclick=f;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+  document.querySelectorAll('thead th.sort').forEach(th=>{th.querySelector('.arr').textContent=state.sort.k===th.dataset.k?(state.sort.dir>0?'↑':'↓'):'↕'});
+}
+function renderAll(){renderTiles();renderPanels();renderUpcoming();renderChips();renderTable()}
+$('#q').addEventListener('input',e=>{state.q=e.target.value;renderAll()});
+$('#fOwner').addEventListener('change',e=>{state.owner=e.target.value;renderAll()});
+$('#group').addEventListener('change',e=>{state.group=e.target.value;save();renderTable()});
+document.querySelectorAll('thead th.sort').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(state.sort.k===k)state.sort.dir*=-1;else{state.sort.k=k;state.sort.dir=1}renderTable()});
+renderAll();
+</script>
+
+</html>

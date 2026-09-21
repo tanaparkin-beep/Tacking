@@ -1,0 +1,488 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta charset="utf-8">
+<title>RTB Action Tracker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --page:#f3f5f8; --surface:#ffffff; --surface-2:#eef1f5; --ink:#141922; --ink-2:#4f5967; --muted:#7f8896; --line:#dfe4ea; --line-2:#ccd3dc;
+  --accent:#1c5cab; --accent-soft:#e3edfa; --accent-ink:#1c5cab;
+  --s-done:#0ca30c; --s-done-bg:#e3f5e3; --s-done-ink:#0a6d0a;
+  --s-prog:#2a78d6; --s-prog-bg:#e2edfb; --s-prog-ink:#1a56a3;
+  --s-soon:#e09a00; --s-soon-bg:#fdf1d5; --s-soon-ink:#8a5b00;
+  --s-late:#d03b3b; --s-late-bg:#fbe3e3; --s-late-ink:#a12727;
+  --s-open:#8a93a0; --s-open-bg:#eceff3; --s-open-ink:#5a6472;
+  --shadow:0 1px 2px rgba(20,25,34,.06),0 4px 14px rgba(20,25,34,.05);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page:#0e1116; --surface:#171b22; --surface-2:#1f242d; --ink:#eef1f5; --ink-2:#b6bec9; --muted:#7f8896; --line:#2a303a; --line-2:#363d49;
+    --accent:#5b9bec; --accent-soft:#1a2a42; --accent-ink:#8ab8f3;
+    --s-done:#2fbf2f; --s-done-bg:#12301a; --s-done-ink:#6fd66f;
+    --s-prog:#3987e5; --s-prog-bg:#152a45; --s-prog-ink:#8ab8f3;
+    --s-soon:#f0b429; --s-soon-bg:#382b0c; --s-soon-ink:#f5cc6a;
+    --s-late:#e35a5a; --s-late-bg:#3a1717; --s-late-ink:#f39a9a;
+    --s-open:#7f8896; --s-open-bg:#242a33; --s-open-ink:#aeb6c0;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page:#0e1116; --surface:#171b22; --surface-2:#1f242d; --ink:#eef1f5; --ink-2:#b6bec9; --muted:#7f8896; --line:#2a303a; --line-2:#363d49;
+  --accent:#5b9bec; --accent-soft:#1a2a42; --accent-ink:#8ab8f3;
+  --s-done:#2fbf2f; --s-done-bg:#12301a; --s-done-ink:#6fd66f;
+  --s-prog:#3987e5; --s-prog-bg:#152a45; --s-prog-ink:#8ab8f3;
+  --s-soon:#f0b429; --s-soon-bg:#382b0c; --s-soon-ink:#f5cc6a;
+  --s-late:#e35a5a; --s-late-bg:#3a1717; --s-late-ink:#f39a9a;
+  --s-open:#7f8896; --s-open-bg:#242a33; --s-open-ink:#aeb6c0;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding-block:20px 48px;padding-inline:16px}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit}
+button:focus-visible,select:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+.hdr{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:18px}
+.hdr h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+.hdr .sub{color:var(--ink-2);margin-top:2px}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:12.5px;color:var(--ink-2);text-align:right}
+.hdr-right a{color:var(--accent-ink);text-decoration:none;border-bottom:1px solid var(--line-2)}
+.hdr-right a:hover{border-bottom-color:var(--accent-ink)}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px 12px;cursor:pointer;text-align:left;position:relative;transition:border-color .15s,transform .15s}
+.tile:hover{border-color:var(--line-2)}
+.tile.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.tile .lbl{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2);font-weight:500}
+.tile .num{font-size:30px;font-weight:700;line-height:1.1;margin-top:6px;letter-spacing:-.02em}
+.tile .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;display:inline-block}
+.dot.done{background:var(--s-done)}.dot.prog{background:var(--s-prog)}.dot.soon{background:var(--s-soon)}.dot.late{background:var(--s-late)}.dot.open{background:var(--s-open)}.dot.all{background:var(--ink)}
+.tile.done .num{color:var(--s-done-ink)}.tile.late .num{color:var(--s-late-ink)}.tile.soon .num{color:var(--s-soon-ink)}.tile.prog .num{color:var(--s-prog-ink)}
+
+/* panels grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.owners-list{max-height:330px;overflow-y:auto;padding-right:4px}
+.brow .bl b{color:var(--muted);font-weight:500;margin-left:4px;font-size:11px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.panel h2{margin:0 0 2px;font-size:14px;font-weight:600}
+.panel .desc{font-size:12px;color:var(--muted);margin-bottom:12px}
+
+/* stacked bars */
+.bars{display:flex;flex-direction:column;gap:7px}
+.brow{display:grid;grid-template-columns:118px 1fr 34px;align-items:center;gap:10px;cursor:pointer;border-radius:6px;padding:2px 4px;margin:0 -4px}
+.brow:hover{background:var(--surface-2)}
+.brow.active{background:var(--accent-soft)}
+.brow .bl{font-size:12.5px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .bt{font-size:12px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+.track{display:flex;height:14px;gap:2px}
+.seg{height:100%;border-radius:2px;min-width:2px;position:relative}
+.seg:first-child{border-radius:4px 2px 2px 4px}.seg:last-child{border-radius:2px 4px 4px 2px}
+.seg:only-child{border-radius:4px}
+.seg.done{background:var(--s-done)}.seg.prog{background:var(--s-prog)}.seg.soon{background:var(--s-soon)}.seg.late{background:var(--s-late)}.seg.open{background:var(--s-open)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+
+/* meetings timeline */
+.mlist{display:flex;flex-direction:column;gap:6px}
+.mrow{display:grid;grid-template-columns:76px 1fr 30px;gap:10px;align-items:center;cursor:pointer;border-radius:6px;padding:3px 4px;margin:0 -4px}
+.mrow:hover{background:var(--surface-2)}.mrow.active{background:var(--accent-soft)}
+.mrow .md{font-size:12px;color:var(--ink-2);white-space:nowrap}
+.mrow .mt{font-size:12px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums}
+
+/* upcoming */
+.up{display:flex;flex-direction:column;gap:8px}
+.upi{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:8px 10px;border-radius:8px;background:var(--surface-2);cursor:pointer;border-left:3px solid var(--s-open)}
+.upi.late{border-left-color:var(--s-late)}.upi.soon{border-left-color:var(--s-soon)}
+.upi:hover{filter:brightness(.98)}
+.upi .d{font-size:12px;line-height:1.3;text-align:center;min-width:44px}
+.upi .d b{display:block;font-size:17px;font-weight:700;letter-spacing:-.01em}
+.upi .d small{color:var(--muted);font-size:10.5px}
+.upi .t{font-size:12.5px;line-height:1.4}
+.upi .t .p{font-size:11px;color:var(--muted);display:block}
+.upi .t .w{display:block;font-size:11px;margin-top:2px;color:var(--ink-2)}
+.up{max-height:400px;overflow-y:auto;padding-right:4px}
+.upi .t .w.late{color:var(--s-late-ink);font-weight:600}
+.upi .t .w.soon{color:var(--s-soon-ink);font-weight:600}
+.empty{color:var(--muted);font-size:12.5px;padding:14px 0;text-align:center}
+
+/* toolbar */
+.tool{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.tool input[type=search]{flex:1 1 220px;min-width:0;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+.tool select{padding:8px 30px 8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;min-height:0}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);font-size:12px;border:none;cursor:pointer;font-weight:500}
+.chip:hover{filter:brightness(.96)}
+.chip .x{font-size:14px;line-height:1;opacity:.7}
+.clear{background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:2px 4px}
+.count{font-size:12.5px;color:var(--ink-2);margin-left:auto}
+
+/* table */
+.tbl-wrap{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:820px}
+thead th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--surface);position:sticky;top:0;z-index:1;white-space:nowrap}
+thead th.sort{cursor:pointer;user-select:none}
+thead th.sort:hover{color:var(--ink)}
+thead th .arr{opacity:.5;margin-left:3px}
+tbody tr.g td{background:var(--surface-2);font-weight:600;font-size:12.5px;padding:7px 12px;color:var(--ink-2);border-bottom:1px solid var(--line)}
+tbody tr.g td span{font-weight:500;color:var(--muted);margin-left:6px}
+tbody tr.r td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}
+tbody tr.r{cursor:pointer}
+tbody tr.r:hover td{background:color-mix(in srgb,var(--surface-2) 55%,var(--surface))}
+tbody tr.r.open-row td{border-bottom-color:transparent}
+tbody tr.d td{padding:0 12px 14px 44px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink-2);background:var(--surface)}
+.title{font-weight:500;color:var(--ink);display:flex;gap:8px;align-items:flex-start}
+.title .car{flex:none;width:16px;height:16px;margin-top:3px;color:var(--muted);transition:transform .15s}
+tr.open-row .car{transform:rotate(90deg)}
+.title .cat{display:block;font-size:11.5px;color:var(--muted);font-weight:400;margin-top:1px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:11.5px;font-weight:600;white-space:nowrap;line-height:1.5}
+.pill.done{background:var(--s-done-bg);color:var(--s-done-ink)}.pill.prog{background:var(--s-prog-bg);color:var(--s-prog-ink)}.pill.soon{background:var(--s-soon-bg);color:var(--s-soon-ink)}.pill.late{background:var(--s-late-bg);color:var(--s-late-ink)}.pill.open{background:var(--s-open-bg);color:var(--s-open-ink)}
+.pill svg{width:11px;height:11px}
+.proj{display:inline-block;padding:1px 7px;border:1px solid var(--line-2);border-radius:5px;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.owners{display:flex;flex-wrap:wrap;gap:3px;max-width:200px}
+.own{font-size:11.5px;padding:1px 6px;background:var(--surface-2);border-radius:4px;color:var(--ink-2);white-space:nowrap}
+.due{white-space:nowrap;font-variant-numeric:tabular-nums}
+.due small{display:block;font-size:11px;color:var(--muted)}
+.due.late{color:var(--s-late-ink);font-weight:600}.due.soon{color:var(--s-soon-ink);font-weight:600}
+.due.late small,.due.soon small{color:inherit;font-weight:500;opacity:.85}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;padding-top:6px}
+.dgrid h4{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.dgrid ul{margin:0;padding-left:16px}
+.dgrid li{margin:2px 0}
+.upd li{list-style:none;margin:4px 0;padding-left:0;display:grid;grid-template-columns:64px 1fr;gap:8px}
+.upd li b{font-weight:500;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dgrid ul.upd{padding-left:0}
+.src{font-size:11px;color:var(--muted);margin-top:6px}
+.foot{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6}
+.foot b{color:var(--ink-2);font-weight:600}
+
+@media (max-width:980px){
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tiles .tile:first-child{grid-column:1/-1}
+  .grid{grid-template-columns:1fr}
+  .hdr-right{align-items:flex-start;text-align:left}
+  .brow{grid-template-columns:96px 1fr 30px}
+  .dgrid{grid-template-columns:1fr}
+  tbody tr.d td{padding-left:12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="hdr">
+    <div>
+      <div class="eyebrow">Rapid Transit System Business · สรุปติดตามงานจากบันทึกการประชุม</div>
+      <h1>RTB Action Tracker</h1>
+      <div class="sub">รวม Action Items จากการประชุมผู้จัดการ <span id="range"></span> · อ้างอิงวันนี้ <b id="today"></b></div>
+    </div>
+    <div class="hdr-right">
+      <span>แหล่งข้อมูล: <a href="https://docs.google.com/spreadsheets/d/1nYQOoOtZRPfxs1iKjQckmWs_QnvS2UdS-49XUeO0Oro/edit" target="_blank" rel="noopener">Google Sheet บันทึกการประชุม</a></span>
+      <span id="mcount"></span>
+    </div>
+  </header>
+
+  <section class="tiles" id="tiles" aria-label="สรุปสถานะ"></section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>สถานะงานแยกตามโครงการ</h2>
+      <div class="desc">คลิกแถวเพื่อกรองตาราง · ความยาวแท่ง = จำนวนงาน</div>
+      <div class="bars" id="projBars"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="panel">
+      <h2>ภาระงานแยกรายบุคคล</h2>
+      <div class="desc">นับทุกงานที่มีชื่อเป็นผู้รับผิดชอบ · เรียงตามงานที่ยังไม่ปิด · คลิกเพื่อกรอง</div>
+      <div class="bars owners-list" id="ownerBars"></div>
+    </div>
+    <div class="panel">
+      <h2>งานที่เกิดจากแต่ละการประชุม</h2>
+      <div class="desc">คลิกเพื่อดูงานเฉพาะการประชุมนั้น</div>
+      <div class="mlist" id="meetBars"></div>
+    </div>
+    <div class="panel">
+      <h2>ครบกำหนดใน 14 วัน &amp; เกินกำหนด</h2>
+      <div class="desc">เรียงตามวันครบกำหนด · คลิกเพื่อเปิดรายละเอียด</div>
+      <div class="up" id="upcoming"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="tool">
+      <input type="search" id="q" placeholder="ค้นหางาน, โครงการ, ผู้รับผิดชอบ…" aria-label="ค้นหา">
+      <select id="fOwner" aria-label="ผู้รับผิดชอบ"><option value="">ผู้รับผิดชอบ: ทั้งหมด</option></select>
+      <select id="fCat" aria-label="หมวดงาน"><option value="">หมวดงาน: ทั้งหมด</option></select>
+      <select id="group" aria-label="จัดกลุ่ม">
+        <option value="owner">จัดกลุ่ม: ผู้รับผิดชอบ (รายบุคคล)</option>
+        <option value="project">จัดกลุ่ม: โครงการ</option>
+        <option value="meeting">จัดกลุ่ม: การประชุม</option>
+        <option value="status">จัดกลุ่ม: สถานะ</option>
+        <option value="cat">จัดกลุ่ม: หมวดงาน</option>
+        <option value="">ไม่จัดกลุ่ม</option>
+      </select>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table id="tbl">
+          <thead><tr>
+            <th style="width:40%">งาน / Action Item</th>
+            <th>โครงการ</th>
+            <th>ผู้รับผิดชอบ</th>
+            <th class="sort" data-k="due">ครบกำหนด <span class="arr">↕</span></th>
+            <th class="sort" data-k="meeting">จากประชุม <span class="arr">↕</span></th>
+            <th>สถานะ</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <p class="foot">
+      <b>เกณฑ์สถานะ:</b> <b>เสร็จแล้ว</b> = มีการบันทึกผลหรือวันเสร็จในบันทึกการประชุม ·
+      <b>เกินกำหนด</b> = ถึงกำหนดแล้วแต่ยังไม่มีบันทึกว่าเสร็จ (รวมงานที่มีความคืบหน้าแต่ยังไม่ปิด) ·
+      <b>ใกล้ครบกำหนด</b> = ครบกำหนดภายใน 7 วัน ·
+      <b>กำลังดำเนินการ</b> = มีความคืบหน้าในประชุมครั้งถัดมา ·
+      <b>รอดำเนินการ</b> = ยังไม่มีอัปเดตและไม่ระบุกำหนด
+      <br>ข้อความ Action Items ย่อ/จัดกลุ่มจากบันทึกต้นฉบับ รายละเอียดเต็มดูได้จากการกดขยายแต่ละแถว
+    </p>
+  </section>
+</div>
+
+<script>
+const TODAY = new Date(2026,8,20); // 20 ก.ย. 2569
+const SOON_DAYS = 7;
+const TH_M = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const MEETINGS = {
+  '2026-07-16':'16 ก.ค. 69','2026-08-03':'3 ส.ค. 69','2026-08-10':'10 ส.ค. 69','2026-08-18':'18 ส.ค. 69',
+  '2026-08-28':'28 ส.ค. 69','2026-09-02':'2 ก.ย. 69','2026-09-16':'16 ก.ย. 69','2026-09-20':'20 ก.ย. 69'
+};
+const STATUS = {
+  done:{l:'เสร็จแล้ว',ico:'M2 6l3 3 5-6'},
+  late:{l:'เกินกำหนด',ico:'M6 2v5M6 9.5v.5'},
+  soon:{l:'ใกล้ครบกำหนด',ico:'M6 2.5v3.5l2 1.5'},
+  prog:{l:'กำลังดำเนินการ',ico:'M2 6a4 4 0 0 1 7-2.5M10 6a4 4 0 0 1-7 2.5'},
+  open:{l:'รอดำเนินการ',ico:'M3 6h6'}
+};
+const ORDER = ['late','soon','prog','open','done'];
+
+// ── Action Items (สรุปจากบันทึกการประชุม) ──────────────────────────
+// m = การประชุมที่มอบหมาย, p = โครงการ, c = หมวด, t = งาน, d = รายละเอียด, o = ผู้รับผิดชอบ, due, st = done|prog|open, u = อัปเดตในการประชุมครั้งถัดมา
+const ITEMS = [
+ {m:'2026-07-16',p:'IBL',c:'กำลังคน & สรรหา',t:'สรรหาพนักงาน IBL ให้ครบ TOR (ขาด 13 คน)',d:['ปัจจุบัน 111 คน จากเป้า 124 คน ตามเงื่อนไขต้องไม่ต่ำกว่า 95%','ขาด ECS 4, FDA 8, Support 1 · จะเข้า 6 คน ผ่านสัมภาษณ์ 1 คน หาเพิ่ม 6 คน'],o:['มนัส','ชัยนรินทร์'],due:null,st:'done',doneDate:'1 ส.ค. 69',u:[{d:'1 ส.ค.',t:'สัมภาษณ์ครบแล้ว (มนัส)'}]},
+ {m:'2026-07-16',p:'BLE',c:'กำลังคน & สรรหา',t:'สรรหาพนักงาน BLE ให้ครบ TOR (ขาด 8 คน)',d:['TOR 71 คน ปัจจุบันขาด 8 คน','Manager ต้องติดตามการสรรหากับ HR ใกล้ชิด รายงานทันทีหากไม่เป็นไปตามเป้า เพื่อหลีกเลี่ยงค่าปรับจากผู้ว่าจ้าง','มีการพัฒนาเว็บ Manpower Data ดูสถานะพนักงานใหม่แบบ Real-time'],o:['ณัฐพัชร์'],due:null,st:'open'},
+ {m:'2026-07-16',p:'IBL / BLE',c:'Plan Work & FTE',t:'จัดทำข้อมูล FTE Personal แยกตามตำแหน่งรายบุคคล',d:['ให้เห็นว่าพนักงาน 1 คนรับผิดชอบงานอะไรและใช้เวลาแต่ละส่วนเท่าใด','นำร่องกลุ่มพนักงาน Admin เป็นลำดับแรก'],o:['Manager ทุกโครงการ'],due:'2026-07-17',st:'prog',u:[{d:'ก.ค.',t:'BLE ส่งแล้ว · IBL ยังไม่มีบันทึกการส่ง'},{d:'3 ส.ค.',t:'พบชั่วโมงงานจริงของ Admin ค่อนข้างน้อย (100-200 นาที/วัน) ให้พิจารณา Shared Pool และต้นทุนรายบุคคล'}]},
+ {m:'2026-07-16',p:'All Project',c:'Plan Work & FTE',t:'จัด Schedule ทีมพี่สุภักดิ์ (คนละ 1 ชม.)',d:['หัวข้อ Plan Work'],o:['สุภักดิ์'],due:null,st:'open'},
+ {m:'2026-07-16',p:'All Project',c:'KPI, วินัย & สวัสดิการ',t:'Manager ทบทวน KPI (Finance / Non-Finance) ที่พี่เดีย Set ไว้',d:['KPI ที่ตั้งไว้ Manager ยังไม่ได้ Review'],o:['Manager ทุกโครงการ'],due:'2026-07-20',st:'done',doneDate:'17 ก.ค. 69',u:[{d:'17 ก.ค.',t:'ส่ง Weight น้ำหนักใหม่แล้ว (Finance: มนัส)'}]},
+ {m:'2026-07-16',p:'IBL',c:'งานประมูล & หางานใหม่',t:'จัดทำข้อเสนอ PE งานรถไฟฟ้า 10 ปี (IBL / BLE)',d:['เพิ่มรายละเอียด 1,500 MB ของแต่ละระบบ และข้อมูล Organization','Manager ตรวจสอบความถูกต้อง เตรียมคำถาม-คำตอบ: ทำไมทุนเป็นแบบนี้ ทำไม Mat เป็นแบบนี้ จะได้งานนี้ไหม มี NI เท่าไหร่'],o:['มนัส','ชัยนรินทร์','ณัฐพัชร์'],due:'2026-09-11',st:'prog',u:[{d:'2 ก.ย.',t:'ชี้แจงงาน L4 · Review PE กับพี่ติ๊ก 4 ก.ย. · คุยกับพี่ชิน 7-11 ก.ย.'}]},
+ {m:'2026-07-16',p:'Lotus / Makro',c:'งานประมูล & หางานใหม่',t:'ถอดแบบและจัดทำราคา BOQ/BUQ ปรับปรุงห้าง Lotus 5 สาขา',d:['โรจนะ: มนัส (BOQ 1.4 MB 4 ส่วน ไฟฟ้า/แอร์/San) · ทาวน์อินทาวน์ + สุวินทวงศ์: สุภักดิ์ · รามอินทรา: ธีระพันธุ์ · ขอนแก่น: ชัยณรงค์','รอต้นทุนแต่ละ Part · แยก Civil / M&E กี่รายการ · แบ่ง Mat กับ Labor · นำ Cost ที่มีอยู่เข้าระบบ'],o:['มนัส','สุภักดิ์','ธีระพันธุ์','ชัยณรงค์'],due:'2026-07-20',st:'prog',u:[{d:'10 ส.ค.',t:'ราคาต่อครั้ง: ไฟฟ้า 20,000 · Chiller 5,000 · Gen 3,900 · ปั๊ม 5,000 · Fire Pump 500 · บ่อบำบัด 1,300'},{d:'16 ก.ย.',t:'เสนอกรอบราคาไปแล้ว 4 สาขา · ราคาควรอยู่ภายใต้ Budget'}]},
+ {m:'2026-07-16',p:'การทางพิเศษฯ',c:'งานประมูล & หางานใหม่',t:'เตรียม Bid งานติดตั้งเครื่องปรับอากาศ 909 ตัว (~51 ลบ.)',d:['สเปคแอร์ 60,000 BTU ต้องได้เบอร์ 5 ระดับ 2 ดาว ซึ่งหายากในตลาด','ข้อจำกัดพื้นที่ในตู้เก็บเงิน อาจต้องสั่งทำพิเศษ (Make by order)'],o:['กฤตวิทย์','สุภักดิ์'],due:null,st:'open'},
+ {m:'2026-07-16',p:'Smart City',c:'งานประมูล & หางานใหม่',t:'เตรียมเอกสารประมูลโครงการ Smart City',d:['อยู่ระหว่างการเตรียมเอกสารประมูล'],o:['ณัฐรัตน์'],due:null,st:'prog',u:[{d:'16 ก.ย.',t:'ถึงขั้นเงินงวดแรก'}]},
+ {m:'2026-07-16',p:'ศูนย์การแพทย์',c:'งานประมูล & หางานใหม่',t:'ติดตามร่าง TOR โครงการศูนย์การแพทย์',d:['ร่าง TOR รอประกาศประชาพิจารณ์'],o:['ณัฐรัตน์'],due:null,st:'open'},
+ {m:'2026-07-16',p:'สนง.อัยการ',c:'งานประมูล & หางานใหม่',t:'ให้ราคากลางงานติดตั้งกล้อง สำนักงานอัยการ',d:['รอประกาศประชาพิจารณ์ เพื่อเข้าไปคอมเมนต์'],o:['กฤตวิทย์'],due:null,st:'open'},
+
+ {m:'2026-08-03',p:'All Project',c:'ฐานข้อมูล, Skill & JD',t:'พนักงานทุกคนกรอกข้อมูล Workforce Database (SharePoint)',d:['ยืนยันวุฒิการศึกษา ทักษะเฉพาะทาง และประสบการณ์ทำงาน ภายใต้งบ 329','ใช้วิเคราะห์ว่าพนักงานแต่ละคนปฏิบัติงานไซต์ใดได้บ้าง'],o:['Manager ทุกโครงการ'],due:null,st:'prog',u:[{d:'3 ส.ค.',t:'กรอกแล้วประมาณ 170 คน ยังไม่ครบ'},{d:'18 ส.ค.',t:'ให้รวบรวม CV/ประสบการณ์ทุกคน แม้เป็นประสบการณ์จากที่อื่น'}]},
+ {m:'2026-08-03',p:'All Project',c:'ฐานข้อมูล, Skill & JD',t:'กำหนด JD และ Skill Level (1, 2, 3) ทุกตำแหน่ง',d:['JD แต่ละตำแหน่ง (Manager, Senior, Engineer, Technician) แบ่งทักษะมาตรฐาน + ทักษะเพิ่มเติมตามระบบ','ใช้จับคู่คนกับงาน (Matching) และรวมใน Workforce Database เพื่อให้ AI วางแผนทรัพยากร'],o:['Manager ทุกโครงการ'],due:'2026-08-20',st:'prog',u:[{d:'18 ส.ค.',t:'กำหนด Skill Level A/B/C · ระบุข้อจำกัดรายบุคคล เช่น ไม่มีใบ กว. (Due 20/8)'},{d:'20 ก.ย.',t:'มอบ ณัฐพัชร์ รวบรวม JD จากโครงสร้างหลักทุกตำแหน่ง (PCS)'}]},
+ {m:'2026-08-03',p:'All Project',c:'Plan Work & FTE',t:'ระดับ Engineer ขึ้นไปกรอก Plan Work ให้ลูกน้องในระบบ Work Force',d:['เพื่อเปรียบเทียบแผน (Plan) กับงานที่ทำจริง (Actual)'],o:['Sr. Engineer'],due:null,st:'open'},
+ {m:'2026-08-03',p:'All Project',c:'KPI, วินัย & สวัสดิการ',t:'บังคับใช้ Daily Report 8 ชม. และตั้งทีม Audit สุ่มตรวจ',d:['Daily Report ต้องตรงตามความเป็นจริง สะท้อน Performance รายบุคคล','ทีม Audit (คล้าย ISO) สุ่มตรวจว่าใช้เวลาและจำนวนคนตามที่ระบุจริง'],o:['Manager ทุกโครงการ'],due:null,st:'open'},
+ {m:'2026-08-03',p:'All Project',c:'KPI, วินัย & สวัสดิการ',t:'นำมาสาย/ขาดงาน/ค่าปรับ มาคำนวณเป็น Score ประเมินประจำปี',d:['Manager และ Engineer ต้องตรวจสอบข้อมูลที่ลูกน้องกรอก ถือเป็นส่วนหนึ่งของ KPI บริหารทีม'],o:['Manager ทุกโครงการ'],due:null,st:'open'},
+
+ {m:'2026-08-10',p:'Lotus / Makro',c:'ต้นทุน & สัญญา',t:'ทำข้อมูลสนับสนุนราคา Lotus เทียบ Makro (พี่แหนม)',d:['ระบุว่าที่ทำไม่ได้เพราะอะไร / ที่มาของราคามาจากไหน','ไฟฟ้า Lotus 20,000 vs Makro 60,000 บาท/ครั้ง ทั้งที่ Scope เหมือนกัน','ล้างปั๊ม 500 บาท/ตัว รวมเซ็นรับรองระบบไฟ ต่ำเกินไป · บ่อบำบัดต้องประสานเทศบาลเอง'],o:['ชัยนรินทร์','พี่แหนม'],due:null,st:'prog',u:[{d:'16 ก.ย.',t:'Makro/Lotus Rev 0.13 Cost 0.15 (ติดลบ 0.20) ต้องทบทวนต้นทุน'}]},
+ {m:'2026-08-10',p:'All Project',c:'ต้นทุน & สัญญา',t:'จัดทำต้นทุนอบรม/สวัสดิการต่อคนทั้งระบบ เพื่อตั้งงบ',d:['Module E 2,750 บาท/คน · งานไฟฟ้า/ที่สูงมีค่าใช้จ่ายเพิ่ม · รีเฟรชทุก 2 ปี ~6,000 · บัตรพนักงาน 700','เตรียมรับมือพนักงานลาออกหลังได้ใบรับรอง'],o:['ชัยนรินทร์'],due:null,st:'open'},
+ {m:'2026-08-10',p:'IBL',c:'ต้นทุน & สัญญา',t:'วิเคราะห์ต้นทุนสัญญา ECS 10 ปี และบริหาร Vendor',d:['สัญญาเดิม (18-25) 130 ลบ. ใช้อะไหล่ ~52 ลบ. · สัญญาใหม่ยื่น 143 ลบ. ต้นทุนจริง ~71 ลบ./10 ปี','ECS Rev 392 MB Cost 286 MB งาน Add 8.9 MB · พี่ต้นไม่ลดราคาเพราะซื้อความเสี่ยง','นัดบริษัทธาร์นัธเข้ามาคุย · ผู้รับเหมา A/B/C เสนอเท่าไหร่ ทำไมเลือกเจ้านี้ · Manager ใส่ Budget เอง','Replace ECS ครบจำนวนหรือยัง ต้อง KPI ให้ BEM ตรวจสอบ · Chiller บางตัวอายุ 20+ ปี'],o:['ชัยนรินทร์'],due:null,st:'open'},
+ {m:'2026-08-10',p:'IBL',c:'Plan Work & FTE',t:'Plan Work ECS: ตารางงาน→คน / คน→งาน, สรุป Work ทั้งปี, Master Work',d:['ECS ~2,341 Work/เดือน (ส.ค. ~2,200) · แต่ละ Work ใช้กี่คน ใครทำ · พนักงาน 1 คนทำอะไรใน 8 ชม.','กรอง Master Work ให้ชัดว่าแต่ละงานใช้เวลาเท่าใด คนระดับใด · พี่ต้นต้องการ Daily Plan Report ภายใต้ St.Eng'],o:['สุภักดิ์','นัธบดี'],due:'2026-08-26',st:'prog',u:[{d:'10 ส.ค.',t:'ขอ Format ก่อน 11/8 และนำเสนออีกครั้งก่อนวันศุกร์'},{d:'18 ส.ค.',t:'ขอข้อมูล 1 เดือน (2,000 Work / 39 คน ใครทำอะไร) ส่งภายใน 26/8'}]},
+ {m:'2026-08-10',p:'IBL',c:'Plan Work & FTE',t:'Plan Work TVS: PM Workload, Context Model (A1/A2/A3), Sub-task & FTE',d:['PM รายเดือน: ส.ค. 288 · ก.ย. 293 · ต.ค. 282 · พ.ย. 212 · ธ.ค. 285 · ม.ค. 292 (ดึง WO จาก Maximo ทุกวันที่ 15)','ระบุตำแหน่ง/ระดับที่ต้องใช้ต่องานแทนชื่อคน · แตก Sub-task ใน 8 ชม. · ตัวอย่าง MCP U01 M2 160 นาที 5 คน','Master Work 192 · MCP 134 · DDC 14 · EAG 2 · จัดการงานแทรก CM / Waiting List / OT'],o:['อาทิตย์','พีรพงษ์','ภูษรัช'],due:'2026-09-03',st:'prog',u:[{d:'10 ส.ค.',t:'ขอ Format ก่อน 14/8'},{d:'2 ก.ย.',t:'SOW ทั้งหมดใต้ TVS? Plan 27 คน Act 24 คน · Work 1,281 รายการ · เพิ่ม 1 Work ใช้กี่คน แยกเวลาเดินทาง · เพิ่มดีเทล Task · แก้ไขแดชบอร์ด'}]},
+ {m:'2026-08-10',p:'BLE',c:'Plan Work & FTE',t:'Plan Work BLE: สรุป Work ทั้งปี, Model จัดคน L1-L3, รายละเอียดรายเดือนรายคน',d:['TVS ~89 · FDA/FDF ~150 · ECS ~600 งาน/เดือน','Job Plan: ECS 63 · FDA 23 · FPSG 16 · CV 26 · คำนวณ Location × ความถี่ (เช่น Chiller 19 ครั้ง/ปี)','แยกไฟล์ทีมแล้ว Link มาส่วนกลาง · หัวหน้าเปลี่ยน Mindset จากทำงานเป็นบันทึก/วิเคราะห์ Performance'],o:['ณัฐพล กาวี','สุรสิทธิ์','คเชนทร์'],due:'2026-08-14',st:'open',u:[{d:'10 ส.ค.',t:'ขอ Format ก่อน 11/8 นำเสนอก่อนวันศุกร์'}]},
+ {m:'2026-08-10',p:'All Project',c:'Plan Work & FTE',t:'Map FTE แต่ละตำแหน่งเข้ากับ Plan Work',d:['FTE = งาน 60 นาที × 4 คน = 4 Man-hours ต้องระบุว่าแบ่งหน้าที่อย่างไร'],o:['Sr. Engineer'],due:null,st:'open'},
+
+ {m:'2026-08-18',p:'All Project',c:'ฐานข้อมูล, Skill & JD',t:'อัปเดตข้อมูลพนักงานเข้า-ออกให้เป็นปัจจุบัน (Admin ทำทุกวันเป็น Job Routine)',d:['จำนวนในไฟล์ยังไม่ตรงกับความเป็นจริง','Manager แต่ละ Project รับผิดชอบหลักตรวจจำนวนคนและตำแหน่ง ไม่ปล่อยให้ Admin ทำลำพัง'],o:['ณัฐรัตน์','เปรมศักดิ์','ชัยนรินทร์','มนัส','ณัฐพัชร์','กฤตวิทย์'],due:'2026-08-18',st:'open'},
+ {m:'2026-08-18',p:'All Project',c:'Plan Work & FTE',t:'พัฒนา Dashboard ติดตามงานและ FTE รายคน จาก Maximo Job Plan',d:['ดึง JP มาคำนวณความถี่ จำนวนคน เวลาที่ใช้ (FTE)','แสดงว่าแต่ละวันพนักงานแต่ละคนทำกี่ Task ใช้กี่นาที','พิจารณาใช้ AI ออกแบบแผนและตารางล่วงหน้า 6 เดือน'],o:['สุภักดิ์','นัธบดี','ชัยณรงค์','ณัฐพล เหลาแก้ว','อาทิตย์','ณัฐพล กาวี','สุรสิทธิ์','คเชนทร์'],due:'2026-08-21',st:'prog',u:[{d:'2 ก.ย.',t:'ให้แก้ไขแดชบอร์ด (TVS)'}]},
+ {m:'2026-08-18',p:'All Project',c:'KPI, วินัย & สวัสดิการ',t:'รวบรวมข้อมูลค่าปรับ / Incentive / คอมมิชชัน เพื่อหารือ HR',d:['วิเคราะห์ปัญหาการลงโทษ เช่น มาสาย ลาออก เพื่อแก้ระบบบริหารคนร่วมกับ HR'],o:['ณัฐรัตน์','เปรมศักดิ์','ชัยนรินทร์','มนัส','ณัฐพัชร์','กฤตวิทย์'],due:'2026-08-20',st:'prog',u:[{d:'28 ส.ค.',t:'หารือสวัสดิการใหม่: เบี้ยขยัน Technician · ค่า กว. Engineer · ค่าทำเกินตำแหน่ง'}]},
+ {m:'2026-08-18',p:'All Project',c:'KPI, วินัย & สวัสดิการ',t:'Engineer ขึ้นไปทำ Daily Report + Plan Weekly และใช้ Outlook Calendar',d:['ระบุกิจกรรมที่ทำแต่ละชั่วโมง เพื่อความโปร่งใส','ลงบันทึกประชุม งานด่วน การลา ใน Outlook Calendar'],o:['ณัฐรัตน์','เปรมศักดิ์','ชัยนรินทร์','มนัส','ณัฐพัชร์','กฤตวิทย์'],due:'2026-08-18',st:'open'},
+
+ {m:'2026-08-28',p:'All Project',c:'KPI, วินัย & สวัสดิการ',t:'จัดทำข้อเสนอสวัสดิการใหม่: เบี้ยขยัน Technician, ค่า กว. Engineer, ค่าทำเกินตำแหน่ง',d:['ค่าทำเกินตำแหน่งจ่ายตามแต่ละโครงการ ไม่ใช่เงินประจำ'],o:['Manager ทุกโครงการ'],due:null,st:'open'},
+ {m:'2026-08-28',p:'All Project',c:'ต้นทุน & สัญญา',t:'สรุปต้นทุนพนักงานแต่ละโครงการ เทียบกับสวัสดิการรูปแบบใหม่',d:[],o:['Manager ทุกโครงการ'],due:'2026-08-28',st:'open'},
+ {m:'2026-08-28',p:'All Project',c:'กำลังคน & สรรหา',t:'สรุปข้อมูลพนักงานที่อายุ 45 ปี',d:[],o:['Manager ทุกโครงการ'],due:'2026-08-28',st:'open'},
+
+ {m:'2026-09-02',p:'All Project',c:'งานประมูล & หางานใหม่',t:'จัดทำ Business Plan 5 ปี / 10 ปี',d:['ขยายออกไปทำงานที่ใหญ่ขึ้น ต่อยอดจากงานที่ทำอยู่'],o:['ไม่ระบุ'],due:null,st:'open'},
+ {m:'2026-09-02',p:'IBL',c:'Plan Work & FTE',t:'FTE IBL: Plan ย่อยตั้งแต่ระดับ Engineer ลงไปของแต่ละระบบ',d:[],o:['ไม่ระบุ'],due:'2026-09-03',st:'open'},
+
+ {m:'2026-09-16',p:'GCC',c:'กำลังคน & สรรหา',t:'นำส่งแผนเรื่องคน GCC (ลาออกเดือนละ 1-2 คน)',d:[],o:['เปรมศักดิ์'],due:'2026-09-21',st:'open'},
+ {m:'2026-09-16',p:'GCC',c:'กำลังคน & สรรหา',t:'หาวันไปเยี่ยมพนักงาน GCC กับคุณโจ้ (CEO)',d:[],o:['เปรมศักดิ์'],due:null,st:'open'},
+ {m:'2026-09-16',p:'ORL',c:'ความคืบหน้าโครงการ',t:'ปิด Progress ORL เดือนกันยายน (ภาพรวม 70%)',d:['พี่ต้นไปคุยกับ STE เรื่องเซ็นรับ Progress','ปรับ Progress กับพี่หนิง'],o:['ไม่ระบุ'],due:'2026-09-30',st:'prog'},
+ {m:'2026-09-16',p:'IRDN',c:'ความคืบหน้าโครงการ',t:'IRDN: รายงาน Progress จบตุลาคม ก่อนผู้ว่าจ้างตรวจรับพฤศจิกายน',d:['Progress ขึ้นจากเดิม 4% · เลื่อนเข้างานจาก ก.ค. เป็น ก.ย.','ตรวจสเตชั่นก่อน · มูลค่าเต็ม 7.3 MB + VO 0.2 MB'],o:['ไม่ระบุ'],due:'2026-10-31',st:'prog'},
+ {m:'2026-09-16',p:'IBL',c:'ความคืบหน้าโครงการ',t:'IBL Detector (19.5 MB) เริ่มตุลาคม · เข้า MCOM พุธ 23 ก.ย.',d:[],o:['ไม่ระบุ'],due:'2026-09-23',st:'open'},
+ {m:'2026-09-16',p:'OCC',c:'กำลังคน & สรรหา',t:'OCC: โยกคนจากรถไฟฟ้า 16 คน แล้วหาคนที่เหลือมาเติม',d:[],o:['ไม่ระบุ'],due:null,st:'prog'},
+ {m:'2026-09-16',p:'สพฉ.',c:'งานประมูล & หางานใหม่',t:'ยื่นข้อเสนอ สพฉ. วันที่ 22 ก.ย. 69 (รอ POC)',d:[],o:['ไม่ระบุ'],due:'2026-09-22',st:'open'},
+
+ {m:'2026-09-20',p:'PCS',c:'ฐานข้อมูล, Skill & JD',t:'รวบรวม JD จากโครงสร้างหลักทุกตำแหน่ง พร้อม Skill ที่ต้องมีต่อ JD',d:['ขอรายละเอียดเพิ่มว่าแต่ละ JD ต้องมี Skill อะไรสนับสนุน'],o:['ณัฐพัชร์'],due:null,st:'open'},
+ {m:'2026-09-20',p:'All Project',c:'KPI, วินัย & สวัสดิการ',t:'Manager กำกับพนักงาน Check in/out อย่างเคร่งครัด มีผลต่อ KPI',d:['ปรึกษา HR แล้ว: ไม่ Check in/out ถือว่าไม่เข้าและออกจากงาน · อ้างว่าลืมไม่มีผลทุกกรณี','ถือเป็นหน้าที่พื้นฐานและระเบียบบริษัท มีผลตั้งแต่วันนี้เป็นต้นไป'],o:['Manager ทุกโครงการ'],due:null,st:'open'},
+];
+
+// ── derive ─────────────────────────────────────────────────────────
+const dayDiff=(iso)=>{const d=new Date(iso+'T00:00:00');return Math.round((d-TODAY)/86400000)};
+ITEMS.forEach((it,i)=>{
+  it.id=i+1;
+  it.days=it.due?dayDiff(it.due):null;
+  if(it.st==='done') it.s='done';
+  else if(it.due&&it.days<0) it.s='late';
+  else if(it.due&&it.days<=SOON_DAYS) it.s='soon';
+  else if(it.st==='prog') it.s='prog';
+  else it.s='open';
+});
+const fmtD=(iso)=>{if(!iso)return '—';const d=new Date(iso+'T00:00:00');return `${d.getDate()} ${TH_M[d.getMonth()]} ${String(d.getFullYear()+543).slice(2)}`};
+const relDue=(it)=>{if(!it.due)return '';if(it.s==='done')return '';const n=it.days;if(n<0)return `เกิน ${-n} วัน`;if(n===0)return 'ครบกำหนดวันนี้';return `อีก ${n} วัน`};
+
+const state={status:null,project:null,meeting:null,owner:'',cat:'',q:'',group:'owner',sort:{k:null,dir:1},open:new Set()};
+try{const s=JSON.parse(localStorage.getItem('rtb-tracker-ui')||'{}');if(s.group!==undefined)state.group=s.group}catch(e){}
+const save=()=>{try{localStorage.setItem('rtb-tracker-ui',JSON.stringify({group:state.group}))}catch(e){}};
+
+const $=(s)=>document.querySelector(s);
+const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pill=(s)=>`<span class="pill ${s}"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="${STATUS[s].ico}"/></svg>${STATUS[s].l}</span>`;
+
+// header
+const mKeys=Object.keys(MEETINGS).sort();
+$('#range').textContent=`${MEETINGS[mKeys[0]]} – ${MEETINGS[mKeys[mKeys.length-1]]}`;
+$('#today').textContent=`${TODAY.getDate()} ${TH_M[TODAY.getMonth()]} ${String(TODAY.getFullYear()+543).slice(2)}`;
+$('#mcount').textContent=`${mKeys.length} การประชุม · ${ITEMS.length} Action Items`;
+
+// filters populate
+const owners=[...new Set(ITEMS.flatMap(i=>i.o))].sort((a,b)=>a.localeCompare(b,'th'));
+owners.forEach(o=>{const op=document.createElement('option');op.value=o;op.textContent=o;$('#fOwner').appendChild(op)});
+const cats=[...new Set(ITEMS.map(i=>i.c))];
+cats.forEach(c=>{const op=document.createElement('option');op.value=c;op.textContent=c;$('#fCat').appendChild(op)});
+$('#group').value=state.group;
+
+function baseFiltered(){ // filters except status/project/meeting (used for charts)
+  const q=state.q.trim().toLowerCase();
+  return ITEMS.filter(it=>(!state.owner||it.o.includes(state.owner))&&(!state.cat||it.c===state.cat)&&(!q||[it.t,it.p,it.c,...it.o,...it.d,...(it.u||[]).map(u=>u.t)].join(' ').toLowerCase().includes(q)));
+}
+function filtered(){
+  return baseFiltered().filter(it=>(!state.status||it.s===state.status)&&(!state.project||it.p===state.project)&&(!state.meeting||it.m===state.meeting));
+}
+
+function renderTiles(){
+  const all=ITEMS;const c=s=>all.filter(i=>i.s===s).length;
+  const tiles=[
+    {k:null,cls:'all',l:'Action Items ทั้งหมด',n:all.length,h:`${mKeys.length} การประชุม · ${new Set(all.map(i=>i.p)).size} โครงการ`},
+    {k:'late',cls:'late',l:'เกินกำหนด',n:c('late'),h:'ถึงกำหนดแล้ว ยังไม่บันทึกว่าเสร็จ'},
+    {k:'soon',cls:'soon',l:'ครบกำหนดใน 7 วัน',n:c('soon'),h:'ต้องปิดภายในสัปดาห์นี้'},
+    {k:'prog',cls:'prog',l:'กำลังดำเนินการ',n:c('prog'),h:`+ รอดำเนินการ ${c('open')} งาน`},
+    {k:'done',cls:'done',l:'เสร็จแล้ว',n:c('done'),h:`${Math.round(c('done')/all.length*100)}% ของทั้งหมด`},
+  ];
+  $('#tiles').innerHTML=tiles.map(t=>`<button class="tile ${t.cls} ${state.status===t.k&&(t.k||!state.status)?'active':''}" data-s="${t.k??''}" aria-pressed="${state.status===t.k}"><span class="lbl"><i class="dot ${t.cls}"></i>${t.l}</span><div class="num">${t.n}</div><div class="hint">${t.h}</div></button>`).join('');
+  $('#tiles').querySelectorAll('.tile').forEach(b=>b.onclick=()=>{const k=b.dataset.s||null;state.status=(state.status===k)?null:k;if(!k)state.status=null;renderAll()});
+}
+
+function stack(items){return ORDER.map(s=>({s,n:items.filter(i=>i.s===s).length})).filter(x=>x.n)}
+function trackHTML(items,max){const total=items.length;const w=total/max*100;return `<div class="track" style="width:${w}%">${stack(items).map(x=>`<div class="seg ${x.s}" style="flex:${x.n}" title="${STATUS[x.s].l} ${x.n}"></div>`).join('')}</div>`}
+
+function renderProj(){
+  const base=baseFiltered().filter(it=>(!state.status||it.s===state.status)&&(!state.meeting||it.m===state.meeting));
+  const projs=[...new Set(ITEMS.map(i=>i.p))].map(p=>({p,items:base.filter(i=>i.p===p)})).filter(x=>x.items.length||state.project===x.p).sort((a,b)=>b.items.length-a.items.length);
+  const max=Math.max(1,...projs.map(x=>x.items.length));
+  $('#projBars').innerHTML=projs.map(x=>`<div class="brow ${state.project===x.p?'active':''}" data-p="${esc(x.p)}" role="button" tabindex="0"><span class="bl" title="${esc(x.p)}">${esc(x.p)}</span>${trackHTML(x.items,max)}<span class="bt">${x.items.length}</span></div>`).join('')||'<div class="empty">ไม่มีงานตามเงื่อนไข</div>';
+  $('#projBars').querySelectorAll('.brow').forEach(r=>{const f=()=>{state.project=state.project===r.dataset.p?null:r.dataset.p;renderAll()};r.onclick=f;r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+  $('#legend').innerHTML=ORDER.map(s=>`<span><i class="dot ${s}"></i>${STATUS[s].l}</span>`).join('');
+}
+function renderOwners(){
+  const base=baseFiltered().filter(it=>(!state.status||it.s===state.status)&&(!state.project||it.p===state.project)&&(!state.meeting||it.m===state.meeting));
+  const pool=state.owner?ITEMS.filter(it=>(!state.status||it.s===state.status)&&(!state.project||it.p===state.project)&&(!state.meeting||it.m===state.meeting)&&(!state.cat||it.c===state.cat)):base;
+  const rows=owners.map(o=>({o,items:pool.filter(i=>i.o.includes(o))})).filter(x=>x.items.length)
+    .sort((a,b)=>{const oa=a.items.filter(i=>i.s!=='done').length,ob=b.items.filter(i=>i.s!=='done').length;return ob-oa||b.items.length-a.items.length});
+  const max=Math.max(1,...rows.map(x=>x.items.length));
+  $('#ownerBars').innerHTML=rows.map(x=>{const late=x.items.filter(i=>i.s==='late').length;return `<div class="brow ${state.owner===x.o?'active':''}" data-o="${esc(x.o)}" role="button" tabindex="0"><span class="bl" title="${esc(x.o)}">${esc(x.o)}${late?`<b>เกิน ${late}</b>`:''}</span>${trackHTML(x.items,max)}<span class="bt">${x.items.length}</span></div>`}).join('')||'<div class="empty">ไม่มีงานตามเงื่อนไข</div>';
+  $('#ownerBars').querySelectorAll('.brow').forEach(r=>{const f=()=>{state.owner=state.owner===r.dataset.o?'':r.dataset.o;$('#fOwner').value=state.owner;renderAll()};r.onclick=f;r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+}
+function renderMeet(){
+  const base=baseFiltered().filter(it=>(!state.status||it.s===state.status)&&(!state.project||it.p===state.project));
+  const rows=mKeys.map(m=>({m,items:base.filter(i=>i.m===m)}));
+  const max=Math.max(1,...rows.map(x=>x.items.length));
+  $('#meetBars').innerHTML=rows.map(x=>`<div class="mrow ${state.meeting===x.m?'active':''}" data-m="${x.m}" role="button" tabindex="0"><span class="md">${MEETINGS[x.m]}</span>${trackHTML(x.items,max)}<span class="mt">${x.items.length}</span></div>`).join('');
+  $('#meetBars').querySelectorAll('.mrow').forEach(r=>{const f=()=>{state.meeting=state.meeting===r.dataset.m?null:r.dataset.m;renderAll()};r.onclick=f;r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+}
+function renderUpcoming(){
+  const list=ITEMS.filter(i=>i.due&&i.s!=='done'&&i.days<=14).sort((a,b)=>a.due.localeCompare(b.due));
+  $('#upcoming').innerHTML=list.map(i=>{const d=new Date(i.due+'T00:00:00');return `<div class="upi ${i.s==='late'||i.s==='soon'?i.s:''}" data-id="${i.id}" role="button" tabindex="0"><div class="d"><b>${d.getDate()}</b><small>${TH_M[d.getMonth()]}</small></div><div class="t"><span class="p">${esc(i.p)} · ${esc(i.o.slice(0,2).join(', '))}${i.o.length>2?` +${i.o.length-2}`:''}</span>${esc(i.t)}<span class="w ${i.s}">${relDue(i)}${i.st==='prog'?' · มีความคืบหน้า':''}</span></div></div>`}).join('')||'<div class="empty">ไม่มีงานครบกำหนดในช่วงนี้</div>';
+  $('#upcoming').querySelectorAll('.upi').forEach(r=>{const f=()=>{const id=+r.dataset.id;state.status=null;state.project=null;state.meeting=null;state.owner='';state.cat='';state.q='';$('#q').value='';$('#fOwner').value='';$('#fCat').value='';state.open.add(id);renderAll();const tr=document.querySelector(`tr.r[data-id="${id}"]`);tr&&tr.scrollIntoView({behavior:'smooth',block:'center'})};r.onclick=f;r.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+}
+function renderChips(){
+  const chips=[];
+  if(state.status)chips.push({k:'status',l:`สถานะ: ${STATUS[state.status].l}`});
+  if(state.project)chips.push({k:'project',l:`โครงการ: ${state.project}`});
+  if(state.meeting)chips.push({k:'meeting',l:`ประชุม: ${MEETINGS[state.meeting]}`});
+  if(state.owner)chips.push({k:'owner',l:`ผู้รับผิดชอบ: ${state.owner}`});
+  if(state.cat)chips.push({k:'cat',l:`หมวด: ${state.cat}`});
+  if(state.q.trim())chips.push({k:'q',l:`ค้นหา: “${state.q.trim()}”`});
+  const n=filtered().length;
+  $('#chips').innerHTML=chips.map(c=>`<button class="chip" data-k="${c.k}">${esc(c.l)}<span class="x">×</span></button>`).join('')+(chips.length?`<button class="clear" id="clearAll">ล้างทั้งหมด</button>`:'')+`<span class="count">แสดง ${n} จาก ${ITEMS.length} งาน</span>`;
+  $('#chips').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const k=b.dataset.k;if(k==='q'){state.q='';$('#q').value=''}else if(k==='owner'){state.owner='';$('#fOwner').value=''}else if(k==='cat'){state.cat='';$('#fCat').value=''}else state[k]=null;renderAll()});
+  const ca=$('#clearAll');if(ca)ca.onclick=()=>{state.status=state.project=state.meeting=null;state.owner=state.cat=state.q='';$('#q').value='';$('#fOwner').value='';$('#fCat').value='';renderAll()};
+}
+function rowHTML(it){
+  const dueCls=it.s==='late'||it.s==='soon'?it.s:'';
+  const dueTxt=it.s==='done'?`${fmtD(it.due)}<small>เสร็จ ${it.doneDate||'—'}</small>`:it.due?`${fmtD(it.due)}<small>${relDue(it)}</small>`:`—<small>ไม่ระบุ</small>`;
+  const open=state.open.has(it.id);
+  const details=`<div class="dgrid">
+    <div><h4>รายละเอียดจากบันทึก</h4>${it.d.length?`<ul>${it.d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<div class="src">ไม่มีรายละเอียดเพิ่มเติมในบันทึก</div>'}</div>
+    <div><h4>ความคืบหน้า / อัปเดต</h4>${(it.u&&it.u.length)?`<ul class="upd">${it.u.map(u=>`<li><b>${esc(u.d)}</b><span>${esc(u.t)}</span></li>`).join('')}</ul>`:'<div class="src">ยังไม่มีอัปเดตในประชุมครั้งถัดมา</div>'}
+    <div class="src">หมวด: ${esc(it.c)} · มอบหมายในประชุม ${MEETINGS[it.m]} · ผู้รับผิดชอบ: ${esc(it.o.join(', '))}</div></div>
+  </div>`;
+  return `<tr class="r ${open?'open-row':''}" data-id="${it.id}" tabindex="0" aria-expanded="${open}">
+    <td><div class="title"><svg class="car" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 3l5 5-5 5"/></svg><div>${esc(it.t)}<span class="cat">${esc(it.c)}</span></div></div></td>
+    <td><span class="proj">${esc(it.p)}</span></td>
+    <td><div class="owners">${it.o.map(o=>`<span class="own">${esc(o)}</span>`).join('')}</div></td>
+    <td><div class="due ${dueCls}">${dueTxt}</div></td>
+    <td class="mono" style="white-space:nowrap;font-size:12.5px">${MEETINGS[it.m]}</td>
+    <td>${pill(it.s)}</td>
+  </tr>${open?`<tr class="d"><td colspan="6">${details}</td></tr>`:''}`;
+}
+function renderTable(){
+  let list=filtered();
+  const {k,dir}=state.sort;
+  const cmp=(a,b)=>{
+    if(k==='due'){const av=a.due||'9999',bv=b.due||'9999';return av.localeCompare(bv)*dir}
+    if(k==='meeting')return a.m.localeCompare(b.m)*dir;
+    return ORDER.indexOf(a.s)-ORDER.indexOf(b.s)||(a.due||'9999').localeCompare(b.due||'9999');
+  };
+  list=[...list].sort(cmp);
+  let html='';
+  if(state.group==='owner'){
+    // งานที่มีหลายคนรับผิดชอบจะแสดงซ้ำใต้ชื่อแต่ละคน
+    const names=state.owner?[state.owner]:owners.filter(o=>list.some(i=>i.o.includes(o)));
+    names.sort((a,b)=>{const ga=list.filter(i=>i.o.includes(a)),gb=list.filter(i=>i.o.includes(b));const oa=ga.filter(i=>i.s!=='done').length,ob=gb.filter(i=>i.s!=='done').length;return ob-oa||gb.length-ga.length});
+    names.forEach(o=>{const g=list.filter(i=>i.o.includes(o));if(!g.length)return;const late=g.filter(i=>i.s==='late').length,done=g.filter(i=>i.s==='done').length;html+=`<tr class="g"><td colspan="6">${esc(o)}<span>${g.length} งาน${late?` · เกินกำหนด ${late}`:''}${done?` · เสร็จ ${done}`:''}</span></td></tr>`+g.map(rowHTML).join('')});
+  }else if(state.group){
+    const keyOf=i=>state.group==='project'?i.p:state.group==='meeting'?i.m:state.group==='status'?i.s:i.c;
+    const labelOf=key=>state.group==='meeting'?`ประชุม ${MEETINGS[key]}`:state.group==='status'?STATUS[key].l:key;
+    let keys=[...new Set(list.map(keyOf))];
+    if(state.group==='status')keys.sort((a,b)=>ORDER.indexOf(a)-ORDER.indexOf(b));
+    else if(state.group==='meeting')keys.sort();
+    else keys.sort((a,b)=>list.filter(i=>keyOf(i)===b).length-list.filter(i=>keyOf(i)===a).length);
+    keys.forEach(key=>{const g=list.filter(i=>keyOf(i)===key);const late=g.filter(i=>i.s==='late').length;html+=`<tr class="g"><td colspan="6">${esc(labelOf(key))}<span>${g.length} งาน${late?` · เกินกำหนด ${late}`:''}</span></td></tr>`+g.map(rowHTML).join('')});
+  }else html=list.map(rowHTML).join('');
+  $('#tbody').innerHTML=html||`<tr><td colspan="6"><div class="empty">ไม่พบงานตามเงื่อนไขที่เลือก</div></td></tr>`;
+  $('#tbody').querySelectorAll('tr.r').forEach(tr=>{const f=()=>{const id=+tr.dataset.id;state.open.has(id)?state.open.delete(id):state.open.add(id);renderTable()};tr.onclick=f;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();f()}}});
+  document.querySelectorAll('thead th.sort').forEach(th=>{th.querySelector('.arr').textContent=state.sort.k===th.dataset.k?(state.sort.dir>0?'↑':'↓'):'↕'});
+}
+function renderAll(){renderTiles();renderProj();renderOwners();renderMeet();renderUpcoming();renderChips();renderTable()}
+
+$('#q').addEventListener('input',e=>{state.q=e.target.value;renderAll()});
+$('#fOwner').addEventListener('change',e=>{state.owner=e.target.value;renderAll()});
+$('#fCat').addEventListener('change',e=>{state.cat=e.target.value;renderAll()});
+$('#group').addEventListener('change',e=>{state.group=e.target.value;save();renderTable()});
+document.querySelectorAll('thead th.sort').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(state.sort.k===k)state.sort.dir*=-1;else{state.sort.k=k;state.sort.dir=1}renderTable()});
+renderAll();
+</script>
+
+</body></html>
