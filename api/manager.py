@@ -7,6 +7,7 @@ import json, posixpath, zipfile
 import xml.etree.ElementTree as ET
 
 FILE_ID = '1CT_RqXDYAP-rk2wC2FC2j8KHEWW21cTX'
+PROJECT_SHEETS = [('IBL ECS','IBL · ECS'),('IBL TVS FDA FPSG','IBL · TVS / FDA / FPSG'),('BLE','BLE'),('Lotus Makro MA','Lotus / Makro MA'),('Lotus Makro Renovate','Lotus / Makro Renovate'),('GCC','GCC'),('Smart City','Smart City'),('ORL','ORL'),('MA จุฬา','MA จุฬา'),('OCC','OCC'),('IRDN','IRDN')]
 NS = {'s':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
 RID = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id'
 
@@ -24,7 +25,7 @@ def parse_workbook(raw):
         sheets={}
         for sheet in book.findall('s:sheets/s:sheet',NS):
             name=sheet.get('name')
-            if name not in ('อัปเดตงาน','สรุป KPI'):continue
+            if name not in ('อัปเดตงาน','สรุป KPI') and name not in dict(PROJECT_SHEETS):continue
             target=rels[sheet.get(RID)]
             path=target.lstrip('/') if target.startswith('/') else posixpath.normpath('xl/'+target)
             cells={}
@@ -41,7 +42,7 @@ def parse_workbook(raw):
                 if name=='สรุป KPI' and c.get('r')=='E4' and formula is not None and 'TODAY' in (formula.text or '').upper():v=None
                 cells[c.get('r')]=v
             sheets[name]=cells
-        if len(sheets)!=2:raise ValueError('ไม่พบชีต อัปเดตงาน และ สรุป KPI ในไฟล์หลัก')
+        if not all(n in sheets for n in ('อัปเดตงาน','สรุป KPI')):raise ValueError('ไม่พบชีต อัปเดตงาน และ สรุป KPI ในไฟล์หลัก')
         def date(v):
             if isinstance(v,(int,float)):
                 try:return (epoch+timedelta(days=v)).date().isoformat()
@@ -66,7 +67,16 @@ def parse_workbook(raw):
         names=[str(s[f'A{r}']).strip() for r in range(14,34) if s.get(f'A{r}')]
         for task in tasks:
             if task['manager'] and task['manager'] not in names:names.append(task['manager'])
-        return dict(tasks=tasks,managers=names,targets=targets,month=(date(s.get('B4')) or datetime.now(timezone(timedelta(hours=7))).date().isoformat())[:7],asOf=date(s.get('E4')) or datetime.now(timezone(timedelta(hours=7))).date().isoformat(),sourceSummary=[dict(manager=s.get(f'A{r}'),values=[s.get(f'{c}{r}') for c in 'BCDEFGHIJK']) for r in range(14,34) if s.get(f'A{r}')])
+        projects=[]
+        for sheet_name,label in PROJECT_SHEETS:
+            if sheet_name not in sheets:raise ValueError('ไม่พบชีตโครงการ '+sheet_name)
+            cells=sheets[sheet_name];items=[]
+            for r in range(2,1000):
+                step=cells.get(f'A{r}')
+                if not isinstance(step,(int,float)) or not 1<=step<=10.4 or not cells.get(f'C{r}'):continue
+                items.append(dict(id=f'{sheet_name}:{r}',row=r,step=format(step,'g'),title=cells.get(f'B{r}') or '',role=cells.get(f'C{r}') or '',project=label,manager=cells.get('J2') or '',due=date(cells.get(f'D{r}')),finished=date(cells.get(f'E{r}')),status=cells.get(f'F{r}') or '',note='ชีต '+sheet_name+' แถว '+str(r),sheet=sheet_name))
+            projects.append(dict(name=label,sheet=sheet_name,manager=cells.get('J2') or '',tasks=items))
+        return dict(tasks=tasks,managers=names,targets=targets,projects=projects,month=(date(s.get('B4')) or datetime.now(timezone(timedelta(hours=7))).date().isoformat())[:7],asOf=date(s.get('E4')) or datetime.now(timezone(timedelta(hours=7))).date().isoformat(),sourceSummary=[dict(manager=s.get(f'A{r}'),values=[s.get(f'{c}{r}') for c in 'BCDEFGHIJK']) for r in range(14,34) if s.get(f'A{r}')])
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
