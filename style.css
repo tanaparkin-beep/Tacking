@@ -5,3 +5,5 @@
 .matrix-table th:not(:first-child):not(:last-child){min-width:150px;max-width:190px;white-space:normal;line-height:1.65;vertical-align:middle;padding:16px 12px}.matrix-table th:last-child{min-width:105px}.matrix-table thead{position:sticky;top:0}.matrix-table th{background:#f8faf7}
 
 .view-context{margin:-4px 0 18px;padding:9px 14px;border-left:3px solid #619174;background:#edf3eb;color:#52745a;font-size:12px;border-radius:0 5px 5px 0}
+
+.matrix-manager{display:block;font-size:10px;font-weight:400;color:#7b8b78;margin-top:5px}.matrix-table td:first-child{min-width:280px;max-width:340px}.matrix-table th:first-child{min-width:280px;max-width:340px;white-space:normal}.matrix-table td:first-child b{line-height:1.65}
