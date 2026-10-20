@@ -7,3 +7,5 @@
 .view-context{margin:-4px 0 18px;padding:9px 14px;border-left:3px solid #619174;background:#edf3eb;color:#52745a;font-size:12px;border-radius:0 5px 5px 0}
 
 .matrix-manager{display:block;font-size:10px;font-weight:400;color:#7b8b78;margin-top:5px}.matrix-table td:first-child{min-width:280px;max-width:340px}.matrix-table th:first-child{min-width:280px;max-width:340px;white-space:normal}.matrix-table td:first-child b{line-height:1.65}
+
+[hidden]{display:none!important}.manager-source{margin-bottom:20px}#managerLive>.panel{margin-bottom:20px}.source-actions{display:flex;gap:10px;flex-wrap:wrap}#managerTargets{padding:0 24px 20px;font-size:11px}#managerSourceError{padding:0 24px;color:#ad623a}.manager-empty{text-align:center;padding:42px 24px;color:#7b8878;font-size:13px}#managerTaskRows td:last-child{white-space:normal;min-width:220px;max-width:340px}#managerLive .panel-title{flex-wrap:wrap}
